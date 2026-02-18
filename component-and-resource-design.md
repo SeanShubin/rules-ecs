@@ -3,6 +3,15 @@
 ## Concept
 Components and Resources are the data model of an ECS game. Components define what entities are and what properties they have. Resources define shared game state. Both should be focused, well-named, and designed so that systems can query exactly what they need without pulling in unrelated data. Poor component/resource design leads to the ECS equivalents of god objects and tight coupling.
 
+### Type Boundaries Are Concurrency Boundaries
+In OO systems, type boundaries are primarily about abstraction and code organization — you draw them where the domain model is cleanest. In ECS, type boundaries serve a second role: they are the boundaries the scheduler uses to determine what can run in parallel. Every component boundary is a potential parallelism boundary. Every marker component is a filter that can partition entities into non-overlapping sets for concurrent access.
+
+This means type design in ECS has consequences at two levels:
+- **Architectural** — how clear, cohesive, and maintainable the data model is (same as any paradigm)
+- **Runtime** — how much parallelism the scheduler can extract, because it can only parallelize systems whose data access doesn't overlap
+
+These two levels usually align: small, focused components with clear responsibilities are both good design and good for parallelism. But when they diverge — when a "clean" abstraction bundles unrelated data into one component — the runtime cost is real. Systems that touch different fields of the same component still conflict in the scheduler's eyes, forcing sequential execution. Design types with both levels in mind.
+
 ## Implementation
 
 ### Components
@@ -142,6 +151,18 @@ struct EntityType(String);  // "enemy", "player", "projectile"
 Marker components enable `With<T>` / `Without<T>` query filters. String comparisons are slower, error-prone, and invisible to the type checker.
 
 ## Rationale
+
+### How the Scheduler Sees Your Types
+Bevy's scheduler builds a dependency graph from system parameter signatures. It applies Rust's borrowing rules at the component level: multiple readers OR one writer. Two systems can run in parallel if and only if their access is compatible — no shared `&mut` on the same component or resource type. The scheduler does not see inside a component; it cannot tell that two systems use different fields of the same struct. It only sees the type.
+
+This has concrete design implications:
+- **Component granularity controls parallelism.** A single `Stats { health: f32, speed: f32, damage: f32 }` component means any system that mutates health conflicts with any system that reads speed. Three separate components (`Health`, `Speed`, `Damage`) let those systems run concurrently.
+- **Marker components control query partitioning.** `Query<&mut Transform>` conflicts with every other `Transform` writer. `Query<&mut Transform, With<Player>>` and `Query<&mut Transform, With<Enemy>>` access disjoint archetype sets, so the scheduler can parallelize them. The marker types are what make this partition visible.
+- **Resource access is coarse-grained.** `Res<T>` and `ResMut<T>` operate on the entire resource. There is no way to borrow one field of a resource. A god resource with 10 fields forces exclusive access for any mutation, blocking all other readers and writers of that resource.
+- **Ordering constraints compound the problem.** If you overconstrain system ordering (e.g., unnecessary `.chain()` or `.before()`/`.after()`), you eliminate parallelism the scheduler could otherwise provide. But if your types are too coarse, the scheduler eliminates parallelism for you — silently, with no explicit ordering in your code.
+
+The last point is especially important: overconstraining via ordering is visible in code and easy to audit. Overconstraining via coarse types is invisible — the scheduler quietly serializes systems and you never see a warning.
+
 "Why many small components instead of fewer larger ones?" ECS parallelism depends on non-overlapping access. If `MovementSystem` needs `Query<&mut BigComponent>` and `RenderSystem` needs `Query<&BigComponent>`, they cannot run in parallel. If movement only mutates `Velocity` and rendering only reads `Sprite`, they parallelize naturally. Smaller components enable more parallelism.
 
 "Why not just use Rust structs with methods for game objects?" That's OOP, not ECS. A `Player` struct with `move()`, `attack()`, and `take_damage()` methods couples behavior to data. ECS separates them: data in components, behavior in systems. This enables composition (attach Health to any entity), reuse (one damage system handles all entities), and parallelism (systems that don't share data run concurrently).
