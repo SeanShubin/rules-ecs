@@ -1,6 +1,6 @@
 # Quick Reference: Is This A Violation?
 
-Fast lookup guide for Rust/Bevy. For details, see the full rules.
+Fast lookup guide for ECS (examples use Rust/Bevy). For details, see the full rules.
 
 ## Always Violations (Fix Immediately)
 
@@ -109,7 +109,7 @@ struct Health {
 
 ## Do NOT Apply These OOP Rules
 
-These rules from the OOP rule set do not apply to Rust/Bevy code:
+These rules from the OOP rule set do not apply to ECS code:
 
 | OOP Rule | Why It Doesn't Apply |
 |----------|---------------------|

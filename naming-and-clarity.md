@@ -32,7 +32,7 @@ The intent of logic is easier to understand when it has a name. In ECS, this app
     - `// Using Verlet integration for stability` - explains why this algorithm, good
     - `// subtract health` above `health.current -= damage` - restates code, bad
 
-## Rust/Bevy-Specific Naming Conventions
+## Rust-Specific Naming Conventions
 
 Follow Rust community conventions:
 - **Types**: `PascalCase` - `PlayerHealth`, `DamageEvent`, `CombatPlugin`

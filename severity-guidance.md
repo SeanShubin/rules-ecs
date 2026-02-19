@@ -1,6 +1,6 @@
 # Severity Guidance: When Rules Matter Most
 
-This guide helps you distinguish between critical violations that must be fixed and patterns that are acceptable in Rust/Bevy context. Priority is based on structural criticality - problems affecting architecture take precedence over local readability concerns.
+This guide helps you distinguish between critical violations that must be fixed and patterns that are acceptable in ECS context. Priority is based on structural criticality - problems affecting architecture take precedence over local readability concerns.
 
 ## High Severity (Must Fix)
 

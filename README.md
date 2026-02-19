@@ -1,12 +1,12 @@
-# Code Quality Rules for Rust and Bevy
+# Code Quality Rules for ECS
 
-This directory contains architectural and code quality rules for game development with Rust and Bevy. These rules are adapted from OOP business application standards to the ECS (Entity Component System) paradigm, preserving the spirit of disciplined, maintainable code while respecting the fundamentally different design constraints of data-oriented game development.
+This directory contains architectural and code quality rules for game development using the ECS (Entity Component System) paradigm. These rules are adapted from OOP business application standards, preserving the spirit of disciplined, maintainable code while respecting the fundamentally different design constraints of data-oriented game development. Examples use Rust and Bevy, but the architectural principles apply to ECS in general.
 
 ## Context
 
 ECS is not "less disciplined OOP." It is a different paradigm optimized for different constraints. Business applications optimize for isolation, testability, and change locality. Game engines optimize for throughput, cache coherence, and frame-budget predictability. Discipline and quality take different forms in each context.
 
-These rules encode what discipline means in Rust/Bevy specifically.
+These rules encode what discipline means in ECS specifically.
 
 ## The Rules
 
@@ -127,7 +127,7 @@ If following one rule would violate a higher-priority rule, follow the higher-pr
 
 ## Evolution
 
-These rules reflect initial understanding of maintainable Rust/Bevy code from the perspective of a business application developer learning game development. They should evolve based on:
+These rules reflect initial understanding of maintainable ECS code from the perspective of a business application developer learning game development. They should evolve based on:
 - **Actual problems encountered** in Bevy projects
 - **False alarms** that waste development time
 - **Bevy idioms** that prove their value in practice

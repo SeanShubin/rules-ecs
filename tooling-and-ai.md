@@ -1,7 +1,7 @@
 # Tooling and AI Integration
 
 ## Concept
-Static analysis tools provide objective, deterministic quality measurement. AI assists developers in understanding and responding to tool findings, but cannot override tool authority. The goal is always zero violations. This philosophy is unchanged from OOP - only the tools and what they measure change for Rust/Bevy.
+Static analysis tools provide objective, deterministic quality measurement. AI assists developers in understanding and responding to tool findings, but cannot override tool authority. The goal is always zero violations. This philosophy is unchanged from OOP - only the tools and what they measure change for ECS.
 
 ## Philosophy
 
@@ -12,7 +12,7 @@ The core philosophy is identical to the OOP rules and is not repeated here in fu
 - Governance Model
 - Petition Process
 
-This document focuses on what changes for Rust/Bevy.
+This document focuses on what changes for ECS development.
 
 ## Rust's Built-In Tooling
 
@@ -103,7 +103,7 @@ Focus custom tooling on what the compiler doesn't enforce: intra-crate module cy
 - Suggest refactorings to achieve zero violations
 - Help formulate arguments for tool refinement
 - Challenge tool findings if they seem unreasonable
-- **Apply these Rust/Bevy rules, not OOP rules, when reviewing game code**
+- **Apply these ECS rules, not OOP rules, when reviewing game code**
 
 **AI cannot:**
 - Add violations to ignore lists
@@ -111,7 +111,7 @@ Focus custom tooling on what the compiler doesn't enforce: intra-crate module cy
 - Make subjective exceptions to quality standards
 - Apply OOP architectural patterns where ECS patterns are appropriate
 
-**Critical reminder from OOP tooling rule:** AI has access to loaded rules but does NOT automatically consult them when making evaluative judgments. When asking for code evaluation, always append "according to my Rust/Bevy rules" or follow up with "does this comply with my architectural standards?"
+**Critical reminder from OOP tooling rule:** AI has access to loaded rules but does NOT automatically consult them when making evaluative judgments. When asking for code evaluation, always append "according to my ECS rules" or follow up with "does this comply with my architectural standards?"
 
 ## Quality Metrics Structure
 
