@@ -38,6 +38,7 @@ Fast lookup guide for ECS (examples use Rust/Bevy). For details, see the full ru
 | Direct mutation within a domain | Events are for cross-domain, not intra-domain |
 | Simple inline filter closures | `.filter(\|(_, h)\| h.current > 0.0)` is readable |
 | Marker components with no fields | `struct Player;` enables `With<Player>` queries |
+| IO logic extracted to pure functions | Enables testing IO-bound systems without infrastructure |
 
 ## Quick Decision Tree
 

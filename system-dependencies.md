@@ -41,6 +41,67 @@ Systems declare their dependencies through function parameters. The Bevy schedul
 | Integrations boundary | Resources wrapping external concerns | `Res<Clock>`, `Res<FileSystem>` make boundaries explicit |
 | Faking for tests | Insert test Resources into World | `world.insert_resource(TestClock::new())` replaces production resource |
 
+## Staged Dependency Injection in ECS
+
+OOP staged DI breaks composition into stages where later stages depend on earlier results (Bootstrap → Schema → Application). ECS achieves the same through schedules, run conditions, and resource availability:
+
+| OOP Staged DI | ECS Equivalent |
+|---------------|---------------|
+| `Integrations` interface (IO boundary) | Resources wrapping external concerns (`NetSocket`, `FileSystem`, `Clock`) |
+| `ProductionIntegrations` | Real resources inserted by `Plugin::build` |
+| `TestIntegrations` (fakes) | Test resources inserted in test `App` |
+| `XyzDependencies` (composition root) | `Plugin::build` — registers systems, resources, messages; no logic |
+| Stage boundary (wiring → work → wiring) | Startup systems → run conditions → runtime systems |
+| `execute(integrations)` (entry point) | `app.run()` with plugins registered |
+
+### Plugin::build as Composition Root
+
+Like OOP composition roots, `Plugin::build` should contain only registration — no logic:
+
+```rust
+impl Plugin for NetPlugin {
+    fn build(&self, app: &mut App) {
+        // Wiring only — no computation, no I/O
+        app.insert_resource(ConnectionState::Loading)
+            .init_resource::<PeerList>()
+            .add_message::<RelayEvent>()
+            .add_systems(Startup, setup_network)
+            .add_systems(Update, receive_messages.run_if(has_socket));
+    }
+}
+```
+
+### IO Extraction Pattern
+
+Systems that perform I/O (socket recv, file read) should extract logic into pure functions:
+
+```rust
+// Pure logic — testable without sockets
+fn apply_relay_message(
+    msg: &RelayMessage,
+    state: &mut ConnectionState,
+    peers: &mut PeerList,
+) {
+    match msg {
+        RelayMessage::PeerJoined { name } => peers.0.push(name.clone()),
+        RelayMessage::PeerLeft { name } => peers.0.retain(|n| n != name),
+        // ...
+    }
+}
+
+// System — thin IO wrapper around pure logic
+fn receive_messages(net: Res<NetSocket>, mut state: ResMut<ConnectionState>, ...) {
+    loop {
+        let bytes = match net.socket.recv(&mut buf) { /* IO */ };
+        let msg = deserialize(&bytes);
+        apply_relay_message(&msg, &mut state, &mut peers);  // logic
+        events.write(RelayEvent(msg));                        // forwarding
+    }
+}
+```
+
+The pure function is testable with plain `#[test]` — no `App`, no `World`, no `Schedule`.
+
 ## Why Concrete Types Are Correct
 
 In OOP, you inject interfaces so you can substitute implementations. In ECS, you use concrete types in queries because:

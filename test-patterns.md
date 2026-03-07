@@ -207,7 +207,64 @@ fn damage_cannot_go_negative() {
 
 No World, no Schedule, no ECS overhead. This is the benefit of separating abstraction levels - pure calculation functions are trivially testable.
 
+## Testing IO Boundary Systems
+
+Systems that perform I/O (network, filesystem) mix untestable IO with testable logic. Extract the logic into a pure function that the system calls:
+
+```rust
+// Pure logic — extracted from the IO system
+fn apply_relay_message(
+    msg: &RelayMessage,
+    state: &mut ConnectionState,
+    peers: &mut PeerList,
+    config: &mut ClientConfig,
+) {
+    match msg {
+        RelayMessage::Welcome { .. } => *state = ConnectionState::Connected,
+        RelayMessage::PeerJoined { name } => peers.0.push(name.clone()),
+        RelayMessage::RejectSecret => {
+            config.relay_secret = None;
+            *state = ConnectionState::NeedsRelaySecret;
+        }
+        _ => {}
+    }
+}
+
+// Test the logic without any IO
+#[test]
+fn reject_secret_clears_config_and_transitions() {
+    let mut state = ConnectionState::Connecting;
+    let mut peers = PeerList::default();
+    let mut config = test_config();
+
+    apply_relay_message(&RelayMessage::RejectSecret, &mut state, &mut peers, &mut config);
+
+    assert_eq!(state, ConnectionState::NeedsRelaySecret);
+    assert!(config.relay_secret.is_none());
+}
+```
+
+For non-Bevy servers (plain Rust), the same pattern applies: handler functions return action values instead of performing IO directly. The main loop executes the actions.
+
+```rust
+enum RelayAction {
+    SendTo(SocketAddr, RelayMessage),
+    SaveRegistry,
+    LogChat { from: String, text: String },
+}
+
+impl RelayState {
+    fn handle_message(&mut self, src: SocketAddr, msg: ClientMessage) -> Vec<RelayAction> {
+        // Pure logic — returns actions instead of sending
+    }
+}
+```
+
 ## When to Use Each Approach
+
+| Scenario | Approach |
+|----------|----------|
+| IO-bound system logic (socket, file) | Extract to pure function, test without Bevy |
 
 | Scenario | Approach |
 |----------|----------|
