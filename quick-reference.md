@@ -10,6 +10,9 @@ Fast lookup guide for ECS (examples use Rust/Bevy). For details, see the full ru
 | Hidden system dependencies | System reads global mutable static | Declare as system parameter; wrap in Resource |
 | Cross-domain direct mutation | Combat system writes to UI component | Use events |
 | Scattered feature changes | New enemy requires changes in 5 unrelated plugins | Improve plugin cohesion |
+| Raw input in game logic | Movement system reads `Res<ButtonInput<KeyCode>>` | Translate to action events in input layer |
+| Rendering types in simulation | Game component holds `Handle<Image>` | Keep simulation components pure; map in presentation layer |
+| Game logic in presentation | Render system mutates `Health` | Move logic to simulation layer |
 
 ## Usually Violations (Fix When Opportune)
 
@@ -43,6 +46,7 @@ Module cycle? → Fix immediately
 Hidden state? → Wrap in Resource, declare as parameter
 Scattered changes? → Improve plugin cohesion
 Cross-domain mutation? → Use events
+Layer violation? → Separate input/simulation/presentation
 Mixing abstraction levels? → Extract helpers
 God resource/component? → Split
 Unnamed magic numbers? → Name them
@@ -63,11 +67,12 @@ Follows Bevy idioms? → Acceptable
 1. **Coupling and Cohesion** - Localize changes to plugins
 2. **System Dependencies** - Declare everything in parameters
 3. **Event Architecture** - Explicit cross-domain communication
-4. **Abstraction Levels** - Separate orchestration from mechanics
-5. **Module Hierarchy** - No cycles, domain-first
-6. **System Organization** - Explicit ordering
-7. **Naming and Clarity** - Meaningful names
-8. **Component and Resource Design** - Focused data types
+4. **Architectural Layers** - Input/simulation/presentation separated by protocols
+5. **Abstraction Levels** - Separate orchestration from mechanics
+6. **Module Hierarchy** - No cycles, domain-first
+7. **System Organization** - Explicit ordering
+8. **Naming and Clarity** - Meaningful names
+9. **Component and Resource Design** - Focused data types
 
 ## Common False Alarms
 

@@ -13,11 +13,12 @@ These rules encode what discipline means in ECS specifically.
 1. **[Coupling and Cohesion](coupling-and-cohesion.md)** - Group code that changes together; separate code that changes for different reasons; Plugins are the primary cohesion boundary
 2. **[System Dependencies](system-dependencies.md)** - Systems declare dependencies through parameters; the scheduler provides them; Resources and Components are the injection mechanism
 3. **[Event Architecture](event-architecture.md)** - Use Bevy's typed events for cross-domain communication; events are the primary decoupling mechanism
-4. **[Abstraction Levels](abstraction-levels.md)** - Separate orchestration systems from mechanical systems; each system operates at a consistent level
-5. **[Module Hierarchy](module-hierarchy.md)** - Organize by game domain; no cycles; crate boundaries are architectural, module boundaries are organizational
-6. **[Naming and Clarity](naming-and-clarity.md)** - Logic should have meaningful names; system parameters, components, and resources communicate intent through names
-7. **[System Organization](system-organization.md)** - Explicit ordering, logical grouping via system sets, deterministic behavior across frames
-8. **[Component and Resource Design](component-and-resource-design.md)** - Focused components, no god resources, bundles for logical grouping, marker components for queries
+4. **[Architectural Layers](architectural-layers.md)** - Separate input, simulation, and presentation into layers with explicit protocols; game logic never reads raw input or references rendering types
+5. **[Abstraction Levels](abstraction-levels.md)** - Separate orchestration systems from mechanical systems; each system operates at a consistent level
+6. **[Module Hierarchy](module-hierarchy.md)** - Organize by game domain; no cycles; crate boundaries are architectural, module boundaries are organizational
+7. **[Naming and Clarity](naming-and-clarity.md)** - Logic should have meaningful names; system parameters, components, and resources communicate intent through names
+8. **[System Organization](system-organization.md)** - Explicit ordering, logical grouping via system sets, deterministic behavior across frames
+9. **[Component and Resource Design](component-and-resource-design.md)** - Focused components, no god resources, bundles for logical grouping, marker components for queries
 
 ## Testing Practice
 
@@ -46,6 +47,8 @@ When adding a game feature requires modifying systems across unrelated plugins, 
 When systems depend on global mutable state that isn't declared in their parameters, behavior becomes unpredictable and untestable. When a system's actual dependencies differ from its declared parameters, you cannot reason about what it needs. (System Dependencies)
 
 When systems communicate by mutating shared resources instead of sending events, implicit coupling grows invisibly. When adding a new response to a game action requires modifying the system that initiates it, the domains are coupled. (Event Architecture)
+
+When game logic reads raw keyboard input directly, adding gamepad support requires modifying movement systems. When simulation components contain sprite handles, changing art style requires modifying game logic. When rendering systems mutate game state as a side effect, testing game logic requires a renderer. (Architectural Layers)
 
 ### Problems That Hide Structure
 
@@ -117,11 +120,12 @@ Use this priority order based on structural criticality:
 1. **Coupling and Cohesion** - Foundational; changes should be localized to plugins
 2. **System Dependencies** - Structural; systems must declare what they use
 3. **Event Architecture** - Cross-domain communication must be explicit
-4. **Abstraction Levels** - Separate orchestration from mechanics
-5. **Module Hierarchy** - No cycles, domain-first organization
-6. **System Organization** - Explicit ordering, deterministic behavior
-7. **Naming and Clarity** - Intent communicated through names
-8. **Component and Resource Design** - Focused data types
+4. **Architectural Layers** - Input, simulation, and presentation separated by protocols
+5. **Abstraction Levels** - Separate orchestration from mechanics
+6. **Module Hierarchy** - No cycles, domain-first organization
+7. **System Organization** - Explicit ordering, deterministic behavior
+8. **Naming and Clarity** - Intent communicated through names
+9. **Component and Resource Design** - Focused data types
 
 If following one rule would violate a higher-priority rule, follow the higher-priority rule.
 

@@ -30,6 +30,12 @@ These violations create problems that multiply:
 - **Rule:** Event Architecture
 - **Action:** Use events for cross-domain communication
 
+### 5. Layer Boundary Violations
+- **Raw input, simulation, or presentation concerns crossing layer boundaries**
+- **Example:** Movement system reads `Res<ButtonInput<KeyCode>>` instead of game action events; game component holds `Handle<Image>`; render system mutates `Health`
+- **Rule:** Architectural Layers
+- **Action:** Translate raw input to action events; keep simulation components free of rendering types; presentation reads game state but never writes to it
+
 ## Medium Severity (Should Fix)
 
 These violations hide structure or create fragile behavior:
@@ -153,6 +159,10 @@ Do systems in different domains communicate via direct mutation?
   YES → Fix: use events
   NO ↓
 
+Does game logic read raw input or hold rendering types?
+  YES → Fix: separate input/simulation/presentation layers
+  NO ↓
+
 Is it a long system mixing orchestration with calculations?
   YES → Consider extracting helper functions
   NO ↓
@@ -177,11 +187,12 @@ When multiple issues exist, fix in this order:
 1. **Coupling and Cohesion** - Changes should be localized to plugins
 2. **System Dependencies** - Systems must declare what they use
 3. **Event Architecture** - Cross-domain communication must be explicit
-4. **Abstraction Levels** - Separate orchestration from mechanics
-5. **Module Hierarchy** - No cycles, domain-first organization
-6. **System Organization** - Explicit ordering, deterministic behavior
-7. **Naming and Clarity** - Intent communicated through names
-8. **Component and Resource Design** - Focused data types
+4. **Architectural Layers** - Input/simulation/presentation separated by protocols
+5. **Abstraction Levels** - Separate orchestration from mechanics
+6. **Module Hierarchy** - No cycles, domain-first organization
+7. **System Organization** - Explicit ordering, deterministic behavior
+8. **Naming and Clarity** - Intent communicated through names
+9. **Component and Resource Design** - Focused data types
 
 ## Remember
 
