@@ -158,6 +158,24 @@ struct Enemy {
 
 Changing art style requires modifying game logic components. Testing game logic requires loading image assets. The simulation layer can't run headless.
 
+### Presentation Constraints in Simulation Data
+```rust
+// Bad: simulation constrains positions to match what the renderer expects
+fn move_avatar(mut query: Query<&mut Transform, With<Avatar>>) {
+    // ... compute delta ...
+    // Wrapping to [0, arena) is a rendering concern (which copy to display),
+    // not a simulation concern (where the avatar is)
+    tf.translation.x = (tf.translation.x + delta.x).rem_euclid(ARENA_WIDTH);
+    tf.translation.y = (tf.translation.y + delta.y).rem_euclid(ARENA_HEIGHT);
+}
+```
+
+This is the flip side of "rendering types in simulation." The simulation data doesn't contain a `Handle<Image>`, but its *values* are constrained to match what the renderer expects. Every system that computes distances or offsets must now invert the projection (`wrap_offset` to recover signed distance from `rem_euclid` positions). The inversion is fragile — `wrap_offset` has a mathematical discontinuity at ±period/2 that becomes a bug whenever the view grows large enough to reach it.
+
+**The smell:** When internal math repeatedly inverts a transformation applied to its own data, the transformation is on the wrong side of the abstraction boundary. Move it to the presentation layer.
+
+**The fix:** Simulation positions are unconstrained (unbounded plane). The presentation layer projects them into the visual range (wrapping, tiling, ghost copies). For example, a torus world is an infinite plane where points differing by the period are equivalent — the simulation works in the unbounded "covering space," and only the renderer collapses equivalent points to decide what to draw where.
+
 ### Game Logic in Presentation Systems
 ```rust
 // Bad: rendering system modifies game state

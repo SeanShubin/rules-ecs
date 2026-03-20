@@ -12,6 +12,8 @@ Fast lookup guide for ECS (examples use Rust/Bevy). For details, see the full ru
 | Scattered feature changes | New enemy requires changes in 5 unrelated plugins | Improve plugin cohesion |
 | Raw input in game logic | Movement system reads `Res<ButtonInput<KeyCode>>` | Translate to action events in input layer |
 | Rendering types in simulation | Game component holds `Handle<Image>` | Keep simulation components pure; map in presentation layer |
+| Presentation constraints in simulation data | Position wrapped to `[0, period)` for renderer | Keep simulation data unconstrained; project at boundary |
+| Repeated inverse transformations | Every consumer calls `wrap_offset` to undo `rem_euclid` | Move the original transformation to the boundary |
 | Game logic in presentation | Render system mutates `Health` | Move logic to simulation layer |
 
 ## Usually Violations (Fix When Opportune)
