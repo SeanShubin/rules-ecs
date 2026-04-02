@@ -1,0 +1,10 @@
+{
+  "name": "code-quality-ecs",
+  "description": "Code quality rules for maintainable ECS game development",
+  "version": "1.0.0",
+  "author": {
+    "name": "Sean Shubin"
+  },
+  "license": "MIT",
+  "keywords": ["code-quality", "ecs", "game-development", "bevy", "rust", "maintainability", "testing", "architecture"]
+}
