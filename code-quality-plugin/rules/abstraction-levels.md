@@ -22,6 +22,32 @@ Code at different levels of abstraction should be separated into distinct system
     - Keep system functions focused on their ECS interactions (queries, events, commands)
     - Move pure calculations into separate functions that take values and return values
 
+## Abstraction Completeness
+
+A function that claims to compute a value for a type should handle all variants of that type. If callers must pre-check which variant they have and route around the function for some cases, the function's abstraction is incomplete — the boundary is in the wrong place.
+
+**Test:** Ask "Can a caller use this function without knowing what kind of input it has?" If the answer is no — if the caller must check for imports, or special-case certain node types, or call a different function for some variants — the function needs to handle those cases internally.
+
+### Violation: Caller must route around incomplete function
+```rust
+// compute_aabb only handles primitives, not imports
+let aabb = if node.import.is_some() {
+    resolve_import_aabb(node, registry)  // caller handles this case
+} else {
+    compute_aabb(node)  // function only handles this case
+};
+```
+
+### Fix: Function handles all variants internally
+```rust
+// node.aabb() handles primitives, imports, and children
+let aabb = node.aabb(registry);
+```
+
+The function dispatches internally based on node type. Callers never need to know whether the node is a primitive, an import, or a container — the abstraction is complete.
+
+**Why this matters:** When a new node type is added, an incomplete function silently returns wrong results for the new type. Every caller must independently discover and handle the gap. A complete function fails at one point — inside its own dispatch — making the gap immediately visible and fixable in one place.
+
 ## Examples
 
 ### Violation: Orchestration mixed with mechanics
